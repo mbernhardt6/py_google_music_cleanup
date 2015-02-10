@@ -1,32 +1,69 @@
 #!/usr/bin/env python
 #This version does not check for play count prior to deleting a song.
 from gmusicapi import Mobileclient
-import sys
+import argpase
+
+#Parse command line arguments.
+parser = argparse.ArgumentParser(description='Process command line flags.')
+parser.add_argument('--delete', dest='run_delete', action='store_true', default=False, help='Flag required to run delete command.')
+
+if not(run_delete):
+  print "Missing \"--delete\" flag."
+  print "Running in logging-only mode."
 
 print "Logging in."
 api = Mobileclient()
 logged_in = api.login('username', 'password')
 
-#TODO: Add a reversed() pass for better tracks_in_playlist avoidance.
-def find_and_remove_dups(api, tracks, tracks_in_playlist):
-  total_delete = 0
-  total_skipped = 0
-  track_set = set()
+#Global variables
+#TODO: Don't know if these should go here or if I'm just too lazy.
+track_set = set()
+total_delete = 0
+total_skipped = 0
+
+def delete_track(track):
+  print " Duplicate:: Title: %s (%s)" % (track['title'], track['artist'])
+  total_delete += 1
+  if (run_delete):
+    api.delete_songs(entryId)
+
+def ok_to_delete(track):
+  bool_delete = False
+  trackId = track['id']
+  calculated_string = ((track['title'] + track['artist'] + track['album'] + track['durationMillis']).replace(" ", "")).lower()
+  if calculated_string in track_set:
+    if (trackId not in trackIds_in_playlists):
+      bool_delete = True
+    else:
+      print "  _In playlist:: Title %s (%s)" % (track['title']), track['artist'])
+      bool_delete = False
+  else:
+    track_set.add(calculated_string)
+    bool_delete = False
+  return bool_delete
+
+def find_and_remove_dups(api, tracks):
+  #Forward pass
   for track in tracks:
     entryId = track['id']
-    calculated_string = ((track['title'] + track['artist'] + track['album'] + track['durationMillis']).replace(" ", "")).lower()
-    if calculated_string in track_set:
-      if (entryId not in tracks_in_playlist):
-        print " Duplicate:: Title: %s (%s)" % (track['title'], track['artist'])
-        total_delete += 1
-        #api.delete_songs(entryId)
-      else:
-        print "  _In playlist:: Tile: %s (%s)" % (track['title'], track['artist'])
-        total_skipped += 1
+    if ok_to_delete(track):
+      delete_track(track)
     else:
-      track_set.add(calculated_string)
+      total_skipped += 1
+  #Reset track_set
+  track_set.clear()
+  #Reverse pass
+  for track in reversed(tracks):
+    entryId = track['id']
+    if ok_to_delete(track):
+      delete_track(track)
+    else:
+      total_skipped +=1
+  #Skipped count may be innaccurate due to double pass.
   print "====="
   print "Total Deleted: %d" % total_delete
+  if not(run_delete):
+    print "Logging-only mode. Above number purely informational."
   print "Total Skipped: %d" % total_skipped
 
 def build_songs_in_playlists(api, playlists):
@@ -44,6 +81,6 @@ if logged_in:
   print "Gather all playlists."
   all_playlists = api.get_all_user_playlist_contents()
   print "Building collection of songs in playlists."
-  in_playlist = build_songs_in_playlists(api, all_playlists)
+  trackIds_in_playlists = build_songs_in_playlists(api, all_playlists)
   print "Searching for duplicates."
-  find_and_remove_dups(api, full_library, in_playlist)
+  find_and_remove_dups(api, full_library)
