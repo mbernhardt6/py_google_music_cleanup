@@ -42,6 +42,7 @@ def ok_to_delete(track):
       bool_delete = True
     else:
       print "  _In playlist:: Title %s (%s)" % (track['title']), track['artist'])
+      total_skipped += 1
       bool_delete = False
   else:
     track_set.add(calculated_string)
@@ -51,20 +52,14 @@ def ok_to_delete(track):
 def find_and_remove_dups(api, tracks):
   #Forward pass
   for track in tracks:
-    entryId = track['id']
     if ok_to_delete(track):
       delete_track(track)
-    else:
-      total_skipped += 1
   #Reset track_set
   track_set.clear()
   #Reverse pass
   for track in reversed(tracks):
-    entryId = track['id']
     if ok_to_delete(track):
       delete_track(track)
-    else:
-      total_skipped +=1
   #Skipped count may be innaccurate due to double pass.
   print "====="
   print "Total Deleted: %d" % total_delete
