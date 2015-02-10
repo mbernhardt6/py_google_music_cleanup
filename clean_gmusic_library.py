@@ -25,7 +25,7 @@ def delete_track(track):
   print " Duplicate:: Title: %s (%s)" % (track['title'], track['artist'])
   total_delete += 1
   if (run_delete):
-    api.delete_songs(entryId)
+    api.delete_songs(track['id'])
 
 #TODO: Implement "playCount" check as part of function.
 #if (track['playCount'] == 0):
