@@ -27,6 +27,12 @@ def delete_track(track):
   if (run_delete):
     api.delete_songs(entryId)
 
+#TODO: Implement "playCount" check as part of function.
+#if (track['playCount'] == 0):
+#TODO: Implement a scoring system of multiple checks.
+#      Each check would add a point.
+#      Minimum number of points required to be deleted.
+#      Weighted checks worth more points.
 def ok_to_delete(track):
   bool_delete = False
   trackId = track['id']
