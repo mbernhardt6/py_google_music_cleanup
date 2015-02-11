@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 #This version does not check for play count prior to deleting a song.
 from gmusicapi import Mobileclient
-import argpase
+import argparse
 
 #Parse command line arguments.
 parser = argparse.ArgumentParser(description='Process command line flags.')
 parser.add_argument('--delete', dest='run_delete', action='store_true', default=False, help='Flag required to run delete command.')
+args = parser.parse_args()
 
-if not(run_delete):
-  print "Missing \"--delete\" flag."
-  print "Running in logging-only mode."
+if not(args.run_delete):
+  print "Missing \"--delete\" flag. Running in logging-only mode."
+else:
+  print "\"--delete\" flag present. Running in delete mode."
 
+#TODO: Implement a separate password file?
 print "Logging in."
 api = Mobileclient()
 logged_in = api.login('username', 'password')
@@ -24,7 +27,7 @@ total_skipped = 0
 def delete_track(track):
   print " Duplicate:: Title: %s (%s)" % (track['title'], track['artist'])
   total_delete += 1
-  if (run_delete):
+  if (args.run_delete):
     api.delete_songs(track['id'])
 
 #TODO: Implement "playCount" check as part of function.
@@ -41,7 +44,7 @@ def ok_to_delete(track):
     if (trackId not in trackIds_in_playlists):
       bool_delete = True
     else:
-      print "  _In playlist:: Title %s (%s)" % (track['title']), track['artist'])
+      print "  _In playlist:: Title %s (%s)" % (track['title'], track['artist'])
       total_skipped += 1
       bool_delete = False
   else:
@@ -63,7 +66,7 @@ def find_and_remove_dups(api, tracks):
   #Skipped count may be innaccurate due to double pass.
   print "====="
   print "Total Deleted: %d" % total_delete
-  if not(run_delete):
+  if not(args.run_delete):
     print "Logging-only mode. Above number purely informational."
   print "Total Skipped: %d" % total_skipped
 
