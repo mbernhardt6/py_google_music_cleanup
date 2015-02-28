@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 #This version does not check for play count prior to deleting a song.
 from gmusicapi import Mobileclient
+#gmusic_auth file contains 2 lines:
+#g_username = '<username>'
+#g_password = '<password>'
+from gmusic_auth import *
 import argparse
 
 #Parse command line arguments.
@@ -16,7 +20,7 @@ else:
 #TODO: Implement a separate password file?
 print "Logging in."
 api = Mobileclient()
-logged_in = api.login('username', 'password')
+logged_in = api.login(g_username, g_password)
 
 #Global variables
 #TODO: Don't know if these should go here or if I'm just too lazy.
